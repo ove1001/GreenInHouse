@@ -1,0 +1,2 @@
+from .votosComentarioDB import VotosComentarios
+from .votosRespuestaDB import VotosRespuestas

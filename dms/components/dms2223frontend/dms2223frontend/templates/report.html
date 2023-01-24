@@ -1,0 +1,16 @@
+{% extends "base_logged_in.html" %}
+{% from "macros/buttons.html" import submit_button, button %}
+{% block title %}{% block subtitle %}{% endblock %}Moderator{% endblock %}
+{% block contentheading %} {{ reporte.descripcion }} {% endblock %}
+{% block contentsubheading %} {{ reporte.autor }} {% endblock %}
+{% block maincontent %}
+    <form action="/reports/{{reporte.getId()}}" method="put">
+        <dl>
+            <dt>Aceptar reporte</dt>
+            <dd>
+                
+
+            </dd>
+        </dl>
+    </form>
+{%endblock %}

@@ -1,0 +1,367 @@
+openapi: 3.0.0
+info:
+  title: DMS authentication service REST API
+  version: '1.0'
+  description: |
+    REST API for the authentication service.
+
+    This is part of the mandatory exercise.
+
+    Diseño y Mantenimiento del Software.
+    Grado en Ingeniería Informática, Universidad de Burgos, 2022-2023.
+  contact:
+    name: Universidad de Burgos
+tags:
+  - name: session
+    description: Session-related operations (e.g., login)
+  - name: users
+    description: User-related operations (e.g., list, create, search)
+  - name: roles
+    description: Role-related operations (e.g., grant, revoke)
+  - name: server
+    description: Operations about the server itself (e.g., server status querying)
+servers:
+  - url: /api/v1
+paths:
+  '/':
+    head:
+      summary: Health test for the service
+      operationId: dms2223auth.presentation.rest.server.health_test
+      responses:
+        '204':
+          $ref: '#/components/responses/Empty'
+      tags:
+        - server
+  /auth:
+    get:
+      summary: Gets the user associated to a token
+      description: |
+        This operation returns the data of the user associated to the token.
+      operationId: dms2223auth.presentation.rest.server.get_token_owner
+      responses:
+        '200':
+          description: Owner of the token
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/UserFullModel'
+              example:
+                username: user1
+      tags:
+        - session
+      security:
+        - user_token: []
+          api_key: []
+    post:
+      summary: Authenticates a user
+      description: |
+        This operation performs a session initiation or renewal.
+
+        If the `Authentication` header is set to use the `Basic` schema holding
+        base64-encoded user credentials, a session is created (see the
+        `user_credentials` security scheme).
+
+        Instead, if it is set to use the `Bearer` schema, it is assumed to hold
+        a valid JWS token from a previous session, and a new token for the same
+        session will be created, effectively resetting the expiration date (see
+        the `user_token` security scheme).
+      operationId: dms2223auth.presentation.rest.server.login
+      responses:
+        '200':
+          description: JWS token
+          content:
+            'text/plain':
+              schema:
+                type: string
+              example: 'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjogImFkbWluIiwgInN1YiI6ICJhZG1pbiIsICJleHAiOiAxNjY1ODgwNjM5LjI4ODEyNjV9.zClfXKR57La5mTXeBWR0JrB7ywmz9sG_cL3RCHYPDlY'
+      tags:
+        - session
+      security:
+        - user_token: []
+          api_key: []
+        - user_credentials: []
+          api_key: []
+  /users:
+    get:
+      summary: Gets a listing of users.
+      description: |
+        This method returns a listing of users.
+      operationId: dms2223auth.presentation.rest.user.list_users
+      responses:
+        '200':
+          description: A list of users.
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/UsersFullListModel'
+              example:
+                - username: user1
+                - username: user2
+      tags:
+        - users
+      security:
+        - user_token: []
+          api_key: []
+    post:
+      summary: Creates a new user.
+      description: |
+        Use this method to create a new user.
+      operationId: dms2223auth.presentation.rest.user.create_user
+      requestBody:
+        description: New user's data.
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UserFullPasswordModel'
+            example:
+              - username: user1
+                password: '1234ABCdef!!'
+      responses:
+        '201':
+          description: Data of the newly created user (password hash is not returned).
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/UserFullModel'
+              example:
+                username: user1
+        '400':
+          $ref: '#/components/responses/GenericBadRequest'
+        '403':
+          $ref: '#/components/responses/UnauthorizedUser'
+        '409':
+          description: There is a conflict with some of the user's unique data.
+          content:
+            'text/plain':
+              schema:
+                type: string
+              example: A user with the given username already exists
+      tags:
+        - users
+      security:
+        - user_token: []
+          api_key: []
+  /users/{username}/roles:
+    get:
+      summary: Gets the roles of a certain user.
+      description: |
+        Gets a list of roles assigned to the given user.
+      operationId: dms2223auth.presentation.rest.userrole.list_user_roles
+      parameters:
+        - $ref: '#/components/parameters/UsernamePathParam'
+      responses:
+        '200':
+          description: The list of roles of the user
+          content:
+            'application/json':
+              schema:
+                type: array
+                items:
+                  type: string
+              example:
+                - ADMINISTRATION
+                - MODERATION
+        '400':
+          description: A user was not provided.
+          content:
+            'text/plain':
+              schema:
+                type: string
+        '403':
+          $ref: '#/components/responses/UnauthorizedUser'
+      tags:
+        - users
+        - roles
+      security:
+        - user_token: []
+          api_key: []
+  /users/{username}/roles/{rolename}:
+    get:
+      summary: Gets whether a user has a certain role or not.
+      description: |
+        This operation is provided so clients can know if a given user has a
+        certain role.
+      operationId: dms2223auth.presentation.rest.userrole.user_has_role
+      parameters:
+        - $ref: '#/components/parameters/UsernamePathParam'
+        - $ref: '#/components/parameters/RolenamePathParam'
+      responses:
+        '204':
+          description: The given user has the given role.
+          content:
+            'text/plain':
+              schema:
+                type: string
+              example: ''
+        '404':
+          description: |
+            The given user does not have the given role, or either the user or
+            the role does not exist.
+          content:
+            'text/plain':
+              schema:
+                type: string
+              example: ''
+      tags:
+        - users
+        - roles
+      security:
+        - user_token: []
+          api_key: []
+    post:
+      summary: Grants a role to a user.
+      description: |
+        Use this operation to grant a role to a user.
+      operationId: dms2223auth.presentation.rest.userrole.grant_role
+      parameters:
+        - $ref: '#/components/parameters/UsernamePathParam'
+        - $ref: '#/components/parameters/RolenamePathParam'
+      responses:
+        '201':
+          description: The given user has been granted the role.
+          content:
+            'text/plain':
+              schema:
+                type: string
+              example: ''
+        '400':
+          description: A mandatory parameter was not given.
+          content:
+            'text/plain':
+              schema:
+                type: string
+              example: Both a username and a role name must be given
+        '403':
+          $ref: '#/components/responses/UnauthorizedUser'
+        '404':
+          description: The given user does not exist.
+          content:
+            'text/plain':
+              schema:
+                type: string
+              example: User user1 was not found
+      tags:
+        - users
+        - roles
+      security:
+        - user_token: []
+          api_key: []
+    delete:
+      summary: Revokes a role from a user.
+      description: |
+        Use this operation to revoke a role from a user.
+      operationId: dms2223auth.presentation.rest.userrole.revoke_role
+      parameters:
+        - $ref: '#/components/parameters/UsernamePathParam'
+        - $ref: '#/components/parameters/RolenamePathParam'
+      responses:
+        '204':
+          description: The given user has been revoked the role.
+          content:
+            'text/plain':
+              schema:
+                type: string
+              example: ''
+        '400':
+          description: A mandatory parameter was not given.
+          content:
+            'text/plain':
+              schema:
+                type: string
+              example: Both a username and a role name must be given
+        '403':
+          $ref: '#/components/responses/UnauthorizedUser'
+      tags:
+        - users
+        - roles
+      security:
+        - user_token: []
+          api_key: []
+components:
+  schemas:
+    UserFullModel:
+      type: object
+      properties:
+        username:
+          type: string
+      required:
+        - username
+    UserFullPasswordModel:
+      allOf:
+        - $ref: '#/components/schemas/UserFullModel'
+        - type: object
+          properties:
+            password:
+              type: string
+          required:
+            - password
+    UsersFullListModel:
+      type: array
+      items:
+        $ref: '#/components/schemas/UserFullModel'
+    RoleModel:
+      type: string
+      enum:
+        - ADMINISTRATION
+        - MODERATION
+        - DISCUSSION
+    EmptyContentModel:
+      type: string
+      nullable: true
+  parameters:
+    UsernamePathParam:
+      name: username
+      description: Name/id of the user.
+      in: path
+      required: true
+      schema:
+        type: string
+    RolenamePathParam:
+      name: rolename
+      description: Name of the role.
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/RoleModel'
+  responses:
+    GenericBadRequest:
+      description: Errors in the request.
+      content:
+        'text/plain':
+          schema:
+            type: string
+    UnauthorizedUser:
+      description: The requesting user has no permission to do this operation.
+      content:
+        'text/plain':
+          schema:
+            type: string
+          example: User X has no permission to perform this operation
+    Empty:
+      description: An empty content.
+      content:
+        'text/plain':
+          schema:
+            $ref: '#/components/schemas/EmptyContentModel'
+          example: ''
+  securitySchemes:
+    user_credentials:
+      description: |
+        Base64-encoded user credentials sent in the `Authorization` header.
+      type: http
+      scheme: basic
+      x-basicInfoFunc: dms2223auth.presentation.rest.security.verify_credentials
+    user_token:
+      description: |
+        JWS token sent in the `Authorization` header as bearer.
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: dms2223auth.presentation.rest.security.verify_token
+    api_key:
+      description: |
+        Secret shared between both the requestor and the service.
+      type: apiKey
+      name: X-ApiKey-Auth
+      in: header
+      x-apikeyInfoFunc: dms2223auth.presentation.rest.security.verify_api_key

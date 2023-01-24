@@ -1,0 +1,1034 @@
+openapi: 3.0.0
+info:
+  title: DMS backend service REST API
+  version: "1.0"
+  description: |
+    REST API for the backend service.
+
+    This is part of the mandatory exercise.
+
+    For simplicity, [HATEOAS](https://en.wikipedia.org/wiki/HATEOAS) is not used
+    although it is highly recommended in actual production scenarios.
+
+    Diseño y Mantenimiento del Software.
+    Grado en Ingeniería Informática, Universidad de Burgos, 2022-2023.
+  contact:
+    name: Universidad de Burgos
+tags:
+  - name: discussion
+    description: Operations regarding the questions and answers.
+  - name: moderation
+    description: Moderation operations.
+  - name: questions
+    description: Question-related operations.
+  - name: answers
+    description: Answer-related operations.
+  - name: comments
+    description: Comment-related operations.
+  - name: votes
+    description: Vote-related operations.
+  - name: reports
+    description: Report-related operations.
+  - name: server
+    description: |
+      Operations about the server itself (e.g., server status querying)
+servers:
+  - url: /api/v1
+paths:
+  "/":
+    head:
+      summary: Health test for the service
+      description: |
+        Use this operation to verify the server is running successfully and the
+        API is reachable.
+      operationId: dms2223backend.presentation.rest.server.health_test
+      responses:
+        "204":
+          $ref: "#/components/responses/Empty"
+      tags:
+        - server
+  /questions:
+    get:
+      summary: Gets the existing questions
+      description: |
+        Queries the storage to fetch the questions.
+
+        Only question stubs are returned. Full information for each question
+        should be fetched separately.
+      operationId: dms2223backend.presentation.rest.preguntas.get_preguntas
+      responses:
+        "200":
+          description: A list of questions.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/QuestionsListModel"
+              example:
+                - qid: 1
+                  title: "Recommended size for the work groups?"
+                  timestamp: 1665574089.0
+                - qid: 2
+                  title: "Separate report or READMEs?"
+                  timestamp: 1665693009.12
+      tags:
+        - discussion
+        - questions
+      security:
+        - user_token: []
+          api_key: []
+    post:
+      summary: Creates a new question
+      description: |
+        This operation creates a new question.
+
+        The owner of the question will be automatically retrieved from the
+        user token against the authorization server.
+      operationId: dms2223backend.presentation.rest.preguntas.post_pregunta
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/QuestionCreationModel"
+            example:
+              titulo: "Recommended size for the work groups?"
+              descripcion: "Which is the recommended size for the work groups in your opinion?"
+              autor: "juan"
+              fecha_creacion: "algo"
+      responses:
+        "201":
+          description: Question created.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/QuestionFullModel"
+              example:
+                qid: 1
+                title: "Recommended size for the work groups?"
+                body: "Which is the recommended size for the work groups in your opinion?"
+                owner:
+                  username: "user1"
+                timestamp: 1665574089.0
+      tags:
+        - discussion
+        - questions
+      security:
+        - user_token: []
+          api_key: []
+  /questions/{qid}:
+    get:
+      summary: Gets a single question
+      operationId: dms2223backend.presentation.rest.preguntas.get_pregunta
+      parameters:
+        - $ref: "#/components/parameters/QuestionIdPathParam"
+      responses:
+        "200":
+          description: The full data of a question.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/QuestionFullModel"
+              example:
+                qid: 1
+                title: "Recommended size for the work groups?"
+                body: "Which is the recommended size for the work groups in your opinion?"
+                owner:
+                  username: "user1"
+                timestamp: 1665574089.0
+        "404":
+          description: The question does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The question with qid 5 does not exist."
+      tags:
+        - discussion
+        - questions
+      security:
+        - user_token: []
+          api_key: []
+  /questions/{qid}/answers:
+    get:
+      summary: Gets the answers for a question
+      description: |
+        Fetches the full answers for a given question.
+      operationId: dms2223backend.presentation.rest.respuestas.get_respuestas
+      parameters:
+        - $ref: "#/components/parameters/QuestionIdPathParam"
+      responses:
+        "200":
+          description: The answers for a question.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/AnswersListModel"
+              example:
+                - id: 1
+                  qid: 1
+                  timestamp: 1665575089
+                  body: I would suggest four members.
+                  owner:
+                    username: user3
+                  votes: 4
+                  user_votes:
+                    user3: true
+                    user4: true
+                    user5: true
+                    user6: true
+                  comments:
+                    - id: 2
+                      aid: 1
+                      timestamp: 1665575389
+                      body: Evaluation criteria may be relaxed due to the tight number of members
+                      sentiment: POSITIVE
+                      owner:
+                        username: user4
+                      votes: 2
+                      user_votes:
+                        user6: true
+                        user5: true
+                    - id: 1
+                      aid: 1
+                      timestamp: 1665575289
+                      body: Enough to distribute the workload equitatively
+                      sentiment: POSITIVE
+                      owner:
+                        username: user4
+                      votes: 1
+                      user_votes:
+                        user6: true
+                    - id: 3
+                      aid: 1
+                      timestamp: 1665577389
+                      body: The deadline may be too close for the workload and a group this "small"
+                      sentiment: NEGATIVE
+                      owner:
+                        username: user4
+                      votes: 0
+                      user_votes: []
+                - id: 2
+                  qid: 1
+                  timestamp: 1665675089
+                  body: Five members.
+                  owner:
+                    username: user2
+                  votes: 2
+                  user_votes:
+                    user1: true
+                    user2: true
+                  comments:
+                    - id: 4
+                      aid: 2
+                      timestamp: 1665777389
+                      body: The teacher may be stricter if groups are too large
+                      sentiment: NEGATIVE
+                      owner:
+                        username: user4
+                      votes: 0
+                      user_votes: []
+        "404":
+          description: The question does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The question with qid 5 does not exist."
+      tags:
+        - discussion
+        - questions
+        - answers
+      security:
+        - user_token: []
+          api_key: []
+    post:
+      summary: Answers a question
+      description: |
+        This operation creates an answer for an existing question.
+
+        The owner of the answer will be automatically retrieved from the
+        user token against the authorization server.
+      operationId: dms2223backend.presentation.rest.respuestas.post_respuesta
+      parameters:
+        - $ref: "#/components/parameters/QuestionIdPathParam"
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/AnswerCreationModel"
+            example:
+              qid: 1
+              body: I would suggest four members.
+      responses:
+        "201":
+          description: The created answer.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/AnswerFullModel"
+              example:
+                timestamp: 1665575089
+                descripcion: I would suggest four members.
+                creador: user3
+        "404":
+          description: The question does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The question with qid 5 does not exist."
+      tags:
+        - discussion
+        - questions
+        - answers
+      security:
+        - user_token: []
+          api_key: []
+  /questions/{qid}/reports:
+    post:
+      summary: Reports a question
+      description: |
+        This operation will report a question to be reviewed by a moderator.
+
+        The owner of the report will be automatically retrieved from the
+        user token against the authorization server.
+      operationId: dms2223backend.presentation.rest.reportes.post_reporte_pregunta
+      parameters:
+        - $ref: "#/components/parameters/QuestionIdPathParam"
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/ReportCreationModel"
+            example:
+              reason: Promotes hate speech
+      responses:
+        "201":
+          description: The created report.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/QuestionReportFullModel"
+              example:
+                id: 1
+                qid: 2
+                reason: Promotes hate speech
+                status: PENDING
+                owner:
+                  username: user4
+                timestamp: 1665922785
+        "404":
+          description: The question does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The question with qid 5 does not exist."
+      tags:
+        - discussion
+        - moderation
+        - questions
+        - reports
+      security:
+        - user_token: []
+          api_key: []
+  /answers/{aid}:
+    get:
+      summary: Get a single answer
+      operationId: dms2223backend.presentation.rest.respuestas.get_respuesta
+      parameters:
+        - $ref: "#/components/parameters/AnswerIdPathParam"
+      responses:
+        "200":
+          description: The answer
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/AnswerFullModel"
+              example:
+                timestamp: 1665575089
+                descripcion: I would suggest four members.
+                creador: user3
+        "404":
+          description: The answer does not exists
+          content:
+            "test/plain":
+              schema:
+                type: string
+      tags:
+        - moderation
+        - answers
+        - reports
+      security:
+        - user_token: []
+          api_key: []
+  /answers/{aid}/votes:
+    post:
+      summary: Upvote an answer
+      description: |
+        This operation will cast a vote on an answer.
+
+        The user voting will be automatically retrieved from the user token
+        against the authorization server.
+      operationId: dms2223backend.presentation.rest.respuestas.post_voto
+      requestBody:
+        content:
+            "text/plain":
+              schema:
+                type: string
+      parameters:
+        - $ref: "#/components/parameters/AnswerIdPathParam"
+      responses:
+        "201":
+          $ref: "#/components/responses/VoteCast"
+        "404":
+          description: The answer does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The answer with aid 50 does not exist."
+        "409":
+          $ref: "#/components/responses/VoteAlreadyCast"
+      tags:
+        - discussion
+        - answers
+        - votes
+      security:
+        - user_token: []
+          api_key: []
+  /answers/{aid}/comments:
+    post:
+      summary: Comments an answer
+      description: |
+        This operation creates a comment for an existing answer.
+
+        The owner of the comment will be automatically retrieved from the user
+        token against the authorization server.
+      operationId: dms2223backend.presentation.rest.comentarios.post_comentario_respuesta
+      parameters:
+        - $ref: "#/components/parameters/AnswerIdPathParam"
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/CommentCreationModel"
+            example:
+              descripcion: Evaluation criteria may be relaxed due to the tight number of members
+              creador: alguien
+              sentimiento: POSITIVE
+              fecha_creacion: "2022-12-28T17:10:40"
+      responses:
+        "201":
+          description: The created comment.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/CommentFullModel"
+              example:
+                timestamp: 1665575389
+                descripcion: Evaluation criteria may be relaxed due to the tight number of members
+                sentimiento: POSITIVE
+                creador: user4
+        "404":
+          description: The answer does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The answer with aid 50 does not exist."
+      tags:
+        - discussion
+        - answers
+        - comments
+      security:
+        - user_token: []
+          api_key: []
+  /answers/{aid}/reports:
+    post:
+      summary: Reports an answer
+      description: |
+        This operation will report an answer to be reviewed by a moderator.
+
+        The owner of the report will be automatically retrieved from the
+        user token against the authorization server.
+      operationId: dms2223backend.presentation.rest.reportes.post_reporte_respuesta
+      parameters:
+        - $ref: "#/components/parameters/AnswerIdPathParam"
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/ReportCreationModel"
+            example:
+              reason: Unrelated to the question
+      responses:
+        "201":
+          description: The created report.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/AnswerReportFullModel"
+              example:
+                id: 1
+                aid: 7
+                reason: Unrelated to the question
+                status: PENDING
+                owner:
+                  username: user4
+                timestamp: 1665922785
+        "404":
+          description: The answer does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The answer with aid 50 does not exist."
+      tags:
+        - discussion
+        - moderation
+        - answers
+        - reports
+      security:
+        - user_token: []
+          api_key: []
+  /comments/{cid}:
+    get:
+      summary: Get a single comment
+      operationId: dms2223backend.presentation.rest.comentarios.get_comentario
+      parameters:
+        - $ref: "#/components/parameters/CommentIdPathParam"
+      responses:
+        "200":
+          description: The answer
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/CommentFullModel"
+        "404":
+          description: The comment does not exists
+          content:
+            "test/plain":
+              schema:
+                type: string
+      tags:
+        - moderation
+        - answers
+        - reports
+      security:
+        - user_token: []
+          api_key: []
+  /comments/{cid}/votes:
+    post:
+      summary: Upvote a comment
+      description: |
+        This operation will cast a vote on a comment.
+
+        The user voting will be automatically retrieved from the user token
+        against the authorization server.
+      operationId: dms2223backend.presentation.rest.comentarios.post_voto
+      requestBody:
+        content:
+            "text/plain":
+              schema:
+                type: string
+      parameters:
+        - $ref: "#/components/parameters/CommentIdPathParam"
+      responses:
+        "201":
+          $ref: "#/components/responses/VoteCast"
+        "404":
+          description: The comment does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The comment with cid 75 does not exist."
+        "409":
+          $ref: "#/components/responses/VoteAlreadyCast"
+      tags:
+        - discussion
+        - comments
+        - votes
+      security:
+        - user_token: []
+          api_key: []
+  /comments/{cid}/reports:
+    post:
+      summary: Reports a comment
+      description: |
+        This operation will report a comment to be reviewed by a moderator.
+
+        The owner of the report will be automatically retrieved from the
+        user token against the authorization server.
+      operationId: dms2223backend.presentation.rest.reportes.post_reporte_comentario
+      parameters:
+        - $ref: "#/components/parameters/CommentIdPathParam"
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/ReportCreationModel"
+            example:
+              reason: Ambiguous sentiment
+      responses:
+        "201":
+          description: The created report.
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/CommentReportFullModel"
+              example:
+                id: 1
+                cid: 7
+                reason: Ambiguous sentiment
+                status: PENDING
+                owner:
+                  username: user4
+                timestamp: 1665922785
+        "404":
+          description: The comment does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The comment with cid 75 does not exist."
+      tags:
+        - discussion
+        - moderation
+        - comments
+        - reports
+      security:
+        - user_token: []
+          api_key: []
+  /reports:
+    get:
+      summary: Get a list of comment reports.
+      description: |
+        This operation gets a listing of reports.
+      operationId: dms2223backend.presentation.rest.reportes.get_reportes
+      responses:
+        "200":
+          description: Listing of reports
+          content:
+            "application/json":
+              schema:
+                $ref: "#/components/schemas/CommentReportsListModel"
+              example:
+                - id: 1
+                  cid: 7
+                  reason: Ambiguous sentiment
+                  status: ACCEPTED
+                  owner:
+                    username: user4
+                  timestamp: 1665922785
+      tags:
+        - moderation
+        - comments
+        - reports
+      security:
+        - user_token: []
+          api_key: []
+    post:
+      summary: Change the status of a report
+      description: |
+        Use this operation to change the status of a report.
+      operationId: dms2223backend.presentation.rest.reportes.set_status
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              $ref: "#/components/schemas/ReportStatusChangeModel"
+            example:
+              status: ACCEPTED
+              id: 1
+              tipo: "pregunta"
+      responses:
+        "204":
+          $ref: "#/components/responses/ReportStatusChanged"
+        "404":
+          description: The question report does not exist.
+          content:
+            "text/plain":
+              schema:
+                type: string
+              example: "The question report with rid 25 does not exist."
+      tags:
+        - moderation
+        - questions
+        - reports
+      security:
+        - user_token: []
+          api_key: []
+components:
+  schemas:
+    QuestionCoreModel:
+      type: object
+      properties:
+        qid:
+          type: integer
+        title:
+          type: string
+        timestamp:
+          type: number
+      required:
+        - qid
+        - title
+        - timestamp
+    QuestionStubModel:
+      allOf:
+        - $ref: "#/components/schemas/QuestionCoreModel"
+    QuestionFullModel:
+      allOf:
+        - $ref: "#/components/schemas/QuestionCoreModel"
+        - type: object
+          properties:
+            body:
+              type: string
+            owner:
+              $ref: "#/components/schemas/UserCoreModel"
+          required:
+            - body
+    QuestionCreationModel:
+      type: object
+      properties:
+        titulo:
+          type: string
+        descripcion:
+          type: string
+        creador:
+          type: string
+        fecha_creacion:
+          type: string
+      required:
+        - titulo
+        - descripcion
+        - creador
+        - fecha_creacion
+    QuestionsListModel:
+      type: array
+      items:
+        $ref: "#/components/schemas/QuestionStubModel"
+    UserCoreModel:
+      type: object
+      properties:
+        username:
+          type: string
+      required:
+        - username
+    AnswerFullModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        qid:
+          type: integer
+        timestamp:
+          type: number
+        body:
+          type: string
+        owner:
+          $ref: "#/components/schemas/UserCoreModel"
+        votes:
+          type: integer
+          minimum: 0
+          default: 0
+          nullable: false
+        user_votes:
+          type: object
+          additionalProperties:
+            type: boolean
+        comments:
+          $ref: "#/components/schemas/CommentsListModel"
+      required:
+        - id
+        - qid
+        - timestamp
+        - body
+        - owner
+    AnswerCreationModel:
+      type: object
+      properties:
+        descripcion:
+          type: string
+        creador:
+          type: string
+        fecha_creacion:
+          type: string
+      required:
+        - descripcion
+        - creador
+        - fecha_creacion
+    AnswersListModel:
+      type: array
+      items:
+        $ref: "#/components/schemas/AnswerFullModel"
+    CommentFullModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        aid:
+          type: integer
+        timestamp:
+          type: number
+        body:
+          type: string
+        sentiment:
+          type: string
+          enum:
+            - POSITIVE
+            - NEUTRAL
+            - NEGATIVE
+        owner:
+          $ref: "#/components/schemas/UserCoreModel"
+        votes:
+          type: integer
+          minimum: 0
+          default: 0
+          nullable: false
+        user_votes:
+          type: object
+          additionalProperties:
+            type: boolean
+      required:
+        - id
+        - aid
+        - timestamp
+        - body
+        - sentiment
+        - owner
+    CommentCreationModel:
+      type: object
+      properties:
+        descripcion:
+          type: string
+        sentimiento:
+          type: string
+          enum:
+            - POSITIVE
+            - NEUTRAL
+            - NEGATIVE
+          default: NEUTRAL
+        fecha_creacion:
+          type: string
+        creador:
+          type: string
+      required:
+        - descripcion
+        - sentimiento
+        - fecha_creacion
+    CommentsListModel:
+      type: array
+      items:
+        $ref: "#/components/schemas/CommentFullModel"
+    QuestionReportFullModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        qid:
+          type: integer
+        reason:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+        owner:
+          $ref: "#/components/schemas/UserCoreModel"
+        timestamp:
+          type: number
+      required:
+        - id
+        - qid
+        - reason
+        - status
+        - owner
+        - timestamp
+    ReportCreationModel:
+      type: object
+      properties:
+        descripcion:
+          type: string
+        autor:
+          type: string
+        elemento:
+          type: integer
+        fechaReporte:
+          type: string
+        estado:
+          type: string
+        tipo:
+          type: string
+      required:
+        - descripcion
+        - autor
+        - elemento
+        - fechaReporte
+        - estado
+        - tipo
+    QuestionReportsListModel:
+      type: array
+      items:
+        $ref: "#/components/schemas/QuestionReportFullModel"
+    AnswerReportFullModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        aid:
+          type: integer
+        reason:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+        owner:
+          $ref: "#/components/schemas/UserCoreModel"
+        timestamp:
+          type: number
+      required:
+        - id
+        - aid
+        - reason
+        - status
+        - owner
+        - timestamp
+    AnswerReportsListModel:
+      type: array
+      items:
+        $ref: "#/components/schemas/AnswerReportFullModel"
+    CommentReportFullModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        cid:
+          type: integer
+        reason:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+        owner:
+          $ref: "#/components/schemas/UserCoreModel"
+        timestamp:
+          type: number
+      required:
+        - id
+        - cid
+        - reason
+        - status
+        - owner
+        - timestamp
+    CommentReportsListModel:
+      type: array
+      items:
+        $ref: "#/components/schemas/CommentReportFullModel"
+    ReportStatusChangeModel:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - PENDING
+            - ACCEPTED
+            - REJECTED
+        id: 
+          type: integer
+        tipo: 
+          type: string
+      required:
+        - status
+        - id
+        - tipo
+    EmptyContentModel:
+      type: string
+      nullable: true
+  parameters:
+    QuestionIdPathParam:
+      name: qid
+      description: Question identifier.
+      in: path
+      schema:
+        type: integer
+      required: true
+    AnswerIdPathParam:
+      name: aid
+      description: Answer identifier.
+      in: path
+      schema:
+        type: integer
+      required: true
+    CommentIdPathParam:
+      name: cid
+      description: Comment identifier.
+      in: path
+      schema:
+        type: integer
+      required: true
+    ReportIdPathParam:
+      name: rid
+      description: report identifier.
+      in: path
+      schema:
+        type: integer
+      required: true
+  responses:
+    Empty:
+      description: An empty content.
+      content:
+        "text/plain":
+          schema:
+            $ref: "#/components/schemas/EmptyContentModel"
+          example: ""
+    ReportStatusChanged:
+      description: Report status successfully changed.
+      content:
+        "text/plain":
+          schema:
+            $ref: "#/components/schemas/EmptyContentModel"
+          example: ""
+    VoteCast:
+      description: Vote successfully cast.
+      content:
+        "text/plain":
+          schema:
+            $ref: "#/components/schemas/EmptyContentModel"
+          example: ""
+    VoteAlreadyCast:
+      description: Vote already cast.
+      content:
+        "text/plain":
+          schema:
+            $ref: "#/components/schemas/EmptyContentModel"
+          example: ""
+
+  securitySchemes:
+    user_token:
+      description: |
+        JWS token sent in the `Authorization` header as bearer.
+
+        Contains, among other things, the user doing the requests.
+
+        It is intended to be handed to the authorization service to obtain
+        useful information, rather than trying to decode it in the backend.
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: dms2223backend.presentation.rest.security.verify_token
+    api_key:
+      description: |
+        Secret shared between both the requestor and the service.
+      type: apiKey
+      name: X-ApiKey-Backend
+      in: header
+      x-apikeyInfoFunc: dms2223backend.presentation.rest.security.verify_api_key

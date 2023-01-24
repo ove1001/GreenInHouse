@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+
+from flask import Flask
+import inspect
+import os
+from typing import Dict
+import dms2223frontend
+from dms2223frontend.data.config import FrontendConfiguration
+from dms2223frontend.data.rest import AuthService, BackendService
+from dms2223frontend.presentation.web import \
+    AdminEndpoints, CommonEndpoints, SessionEndpoints, DiscussionEndpoints, ModeratorEndpoints
+#TODO
+cfg: FrontendConfiguration = FrontendConfiguration()
+cfg.load_from_file(cfg.default_config_file())
+auth_service_cfg: Dict = cfg.get_auth_service()
+auth_service: AuthService = AuthService(
+    auth_service_cfg['host'], auth_service_cfg['port'],
+    apikey_header='X-ApiKey-Auth',
+    apikey_secret=auth_service_cfg['apikey_secret']
+)
+backend_service_cfg: Dict = cfg.get_backend_service()
+backend_service: BackendService = BackendService(
+    backend_service_cfg['host'], backend_service_cfg['port'],
+    apikey_header='X-ApiKey-Backend',
+    apikey_secret=backend_service_cfg['apikey_secret']
+)
+
+app = Flask(
+    __name__,
+    static_folder=os.path.dirname(
+        inspect.getfile(dms2223frontend)) + '/static',
+    template_folder=os.path.dirname(
+        inspect.getfile(dms2223frontend)) + '/templates'
+)
+app.secret_key = bytes(cfg.get_app_secret_key(), 'ascii')
+
+
+@app.route("/login", methods=['GET'])
+def get_login():
+    return SessionEndpoints.get_login(auth_service)
+
+@app.route("/login", methods=['POST'])
+def post_login():
+    return SessionEndpoints.post_login(auth_service)
+
+@app.route("/logout", methods=['GET'])
+def get_logout():
+    return SessionEndpoints.get_logout()
+
+@app.route("/home", methods=['GET'])
+def get_home():
+    return CommonEndpoints.get_home(auth_service)
+
+@app.route("/discussion", methods=['GET'])
+def get_discussion():
+    return DiscussionEndpoints.get_discussion(auth_service,backend_service)
+
+@app.route("/discussion", methods=['POST'])
+def post_discussion():
+    return DiscussionEndpoints.post_discussion(auth_service,backend_service)
+
+@app.route("/discussion/<int:id_pregunta>", methods=['GET'])
+def get_question(id_pregunta: int):
+    return DiscussionEndpoints.get_question(auth_service,backend_service,id_pregunta)
+
+@app.route("/discussion/<int:id_pregunta>", methods=['POST'])
+def post_answer(id_pregunta: int):
+    return DiscussionEndpoints.post_answer(auth_service,backend_service,id_pregunta)
+
+@app.route("/discussion/<int:id_pregunta>/<int:id_respuesta>",methods=['POST'])
+def post_comentario(id_pregunta: int, id_respuesta: int):
+    return DiscussionEndpoints.post_comment(auth_service,backend_service,id_pregunta,id_respuesta)
+
+@app.route("/discussion/<int:pregunta_id>/<int:respuesta_id>/votar", methods=['POST'])
+def vote_answers(pregunta_id,respuesta_id):
+    return DiscussionEndpoints.vote_answers(auth_service,backend_service, pregunta_id, respuesta_id)
+
+@app.route("/discussion/<int:pregunta_id>/<int:respuesta_id>/<int:comentario_id>/votar", methods=['POST'])
+def vote_comments(pregunta_id,respuesta_id,comentario_id):
+    return DiscussionEndpoints.vote_comments(auth_service,backend_service, pregunta_id, respuesta_id,comentario_id)
+
+@app.route("/discussion/<int:pregunta_id>/report", methods=['POST'])
+def report_questions(pregunta_id):
+    return DiscussionEndpoints.report_questions(auth_service,backend_service, pregunta_id)
+
+@app.route("/discussion/<int:pregunta_id>/<int:respuesta_id>/report", methods=['POST'])
+def report_answers(pregunta_id,respuesta_id):
+    return DiscussionEndpoints.report_answers(auth_service,backend_service, pregunta_id, respuesta_id)
+
+@app.route("/discussion/<int:pregunta_id>/<int:respuesta_id>/<int:comentario_id>/report", methods=['POST'])
+def report_comments(pregunta_id,respuesta_id,comentario_id):
+    return DiscussionEndpoints.report_comments(auth_service,backend_service, pregunta_id, respuesta_id,comentario_id)
+
+@app.route("/moderator", methods=['GET'])
+def get_moderator():
+    return ModeratorEndpoints.get_moderator(auth_service,backend_service)
+
+@app.route("/moderator/<int:id_reporte>", methods=['POST'])
+def post_report(id_reporte: int):
+    return ModeratorEndpoints.post_report(auth_service,backend_service,id_reporte)
+
+@app.route("/admin", methods=['GET'])
+def get_admin():
+    return AdminEndpoints.get_admin(auth_service)
+
+@app.route("/admin/users", methods=['GET'])
+def get_admin_users():
+    return AdminEndpoints.get_admin_users(auth_service)
+
+@app.route("/admin/users/new", methods=['GET'])
+def get_admin_users_new():
+    return AdminEndpoints.get_admin_users_new(auth_service)
+
+@app.route("/admin/users/new", methods=['POST'])
+def post_admin_users_new():
+    return AdminEndpoints.post_admin_users_new(auth_service)
+
+@app.route("/admin/users/edit", methods=['GET'])
+def get_admin_users_edit():
+    return AdminEndpoints.get_admin_users_edit(auth_service)
+
+@app.route("/admin/users/edit", methods=['POST'])
+def post_admin_users_edit():
+    return AdminEndpoints.post_admin_users_edit(auth_service)
+
+
+if __name__ == '__main__':
+    app.run(
+        host=cfg.get_service_host(),
+        port=cfg.get_service_port(),
+        debug=cfg.get_debug_flag()
+    )

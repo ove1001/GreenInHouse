@@ -1,0 +1,27 @@
+{% extends "base_logged_in.html" %}
+{% from "macros/buttons.html" import submit_button, button %}
+{% block contentheading %}Discussions panel{% endblock %}
+{% block maincontent %}
+    {% block discussioncontent %}
+        <form action="/discussion" method="post">
+            <dl>
+                <dt>Pregunta</dt>
+
+                <input type="text" name="titulo" placeholder="Titulo" autofocus  /><br>
+                <input type="text" name="descripcion" placeholder="Descripcion" autofocus />
+
+                <p class="alignright">{{ submit_button('bluebg', 'Crear') }}{{ submit_button('bluebg', 'Cancelar') }}</p>
+
+            </dl>
+        </form>
+        {% for pregunta in preguntas %}
+            {% if pregunta.getVisible() %}
+                <div class="questiondiv">
+                    <a class="questiontext" href="/discussion/{{ pregunta.getId() }}" name="pregunta">{{pregunta.getTitulo()}}</a><br>
+                    <p class="questiontext">{{pregunta.getDescripcion()}}<br>
+                        {{pregunta.getCreador()}}</p>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endblock %}
+{% endblock %}

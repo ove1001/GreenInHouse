@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+import os
+import inspect
+import logging
+import connexion
+from flask import current_app
+from flask.logging import default_handler
+from authlib.jose import JsonWebSignature
+import dms2223auth
+from dms2223auth.data.config import AuthConfiguration
+from dms2223auth.data.db import Schema
+
+
+if __name__ == '__main__':
+    cfg: AuthConfiguration = AuthConfiguration()
+    cfg.load_from_file(cfg.default_config_file())
+    db: Schema = Schema(cfg)
+    jws: JsonWebSignature = JsonWebSignature()
+
+    specification_dir = os.path.dirname(
+        inspect.getfile(dms2223auth)) + '/openapi'
+    app = connexion.FlaskApp(
+        __name__,
+        specification_dir=specification_dir,
+        options={
+            "swagger_ui": True,
+            "serve_spec": True
+        }
+    )
+    app.add_api("spec.yml", strict_validation=True)
+    flask_app = app.app
+    with flask_app.app_context():
+        current_app.db = db
+        current_app.cfg = cfg
+        current_app.jws = jws
+
+    root_logger = logging.getLogger()
+    root_logger.addHandler(default_handler)
+
+    app.run(
+        host=cfg.get_service_host(),
+        port=cfg.get_service_port(),
+        debug=cfg.get_debug_flag(),
+        use_reloader=False
+    )

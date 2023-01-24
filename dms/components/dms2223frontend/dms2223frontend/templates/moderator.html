@@ -1,0 +1,28 @@
+{% extends "base_logged_in.html" %}
+{% from "macros/buttons.html" import submit_button, button %}
+{% block title %}{% block subtitle %}{% endblock %}Moderation{% endblock %}
+{% block contentheading %}Moderation panel{% endblock %}
+{% block maincontent %}
+        <form action="/moderator" method="get">
+            <dl>
+                <dt>Reportes</dt>
+            </dl>
+        </form> 
+
+        {% for reporte in reportes %}
+            <div class="reportdiv">
+                Descripcion reporte: <a class="reportlink" href="/moderator/{{ reporte.getId() }}" name="reporte">{{reporte.getDescripcion()}}</a>
+                <p class="reporttext">Autor reporte: {{reporte.getAutor()}}</p>
+                <p class="reporttext">Id {{reporte.getTipoElemento()}}: {{reporte.getElemento().getId()}}<br>
+                Descripcion {{reporte.getTipoElemento()}}: {{reporte.getElemento().getDescripcion()}}<br>
+                Autor {{reporte.getTipoElemento()}}: {{reporte.getElemento().getCreador()}}<br>
+                {{reporte.getFechaReporte()}}</p>
+                <form action="/moderator/{{ reporte.getId() }}" method="post">
+                    <input type = "radio" name = "opcion" value = "aceptar"/> aceptar
+                    <input type = "radio" name = "opcion" value= "rechazar" checked/> rechazar
+                    <p class="alignright">{{ submit_button('bluebg', 'Aceptar') }}</p>
+                </form>
+                    
+            </div>
+        {% endfor %}
+{% endblock %}

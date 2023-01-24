@@ -1,0 +1,14 @@
+{% macro navbar(roles) %}
+<ul id="navlinks">
+    <li><a href="/home">Home</a></li>
+    {%- if 'DISCUSSION' in roles -%}
+        <li><a href="/discussion">Discussion</a></li>
+    {%- endif -%}
+    {%- if 'MODERATION' in roles -%}
+        <li><a href="/moderator">Moderator</a></li>
+    {%- endif -%}
+    {%- if 'ADMINISTRATION' in roles -%}
+        <li><a href="/admin">Admin</a></li>
+    {%- endif -%}
+</ul>
+{% endmacro %}

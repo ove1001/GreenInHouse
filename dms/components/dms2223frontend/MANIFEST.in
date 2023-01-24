@@ -1,0 +1,2 @@
+recursive-include dms2223frontend/templates/ *
+recursive-include dms2223frontend/static/ *

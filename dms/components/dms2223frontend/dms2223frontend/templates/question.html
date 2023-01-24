@@ -1,0 +1,97 @@
+{% extends "base_logged_in.html" %}
+{% from "macros/buttons.html" import submit_button, button %}
+{% block contentheading %} {{ pregunta.getTitulo() }} {% endblock %}
+{% block contentsubheading %} {{ pregunta.getDescripcion() }} {% endblock %}
+{% block maincontent %}
+    {% block answercontent %}
+        <div class="answerquestiondiv">
+            <form action="/discussion/{{ pregunta.getId() }}/report" method="POST">
+                <dl>
+                    <dt>Reportar pregunta:</dt>
+                    <dd>
+                        <input type="text" name="descripcion" placeholder="Descripcion" />
+                    </dd>
+                </dl>
+                <p class="alignright">{{ submit_button('bluebg', 'Enviar') }}{{ button('redbg', redirect_to, 'Cancel') }}</p>
+            </form>
+            <form action="/discussion/{{ pregunta.getId() }}" method="post">
+            <!--<form action="/discussion/question/answer" method="post">-->
+                <dl>
+                    <dt>Añadir respuesta:</dt>
+                    <dd>
+                        <input type="text" name="descripcion" placeholder="Descripcion" autofocus />
+                    </dd>
+                </dl>
+                <p class="alignright">{{ submit_button('bluebg', 'Crear') }}{{ button('redbg', redirect_to, 'Cancel') }}</p>
+            </form>
+        </div>
+        {% for respuesta in pregunta.getRespuestas() %}
+            {% if respuesta.getVisible() %}
+                <div class="answerdiv">
+                    <p class="answertext">{{respuesta.getDescripcion()}}</p><br>
+                    <p class="answertext">{{respuesta.getCreador()}}</p>
+                    <p class="votetext">votos: {{respuesta.getVotos()}}</p>
+                    <form action="/discussion/{{ pregunta.getId() }}/{{ respuesta.getId() }}/votar" method="POST">
+                        <p class="alignleft">{{ submit_button('redfire', 'Votar') }}</p>
+                    </form>
+                    <p class="datetext">{{respuesta.getFechaCreacion().strftime("%A, %d of %B %Y at %I:%M %p")}}</p>            
+                    <form action="/discussion/{{ pregunta.getId() }}/{{ respuesta.getId() }}/report" method="post">
+                        <dl>
+                            <dt>Reportar respuesta:</dt>
+                            <dd>
+                                <input type="text" name="descripcion" placeholder="Descripcion" />
+                                <input name="id_pregunta" type="hidden" value="{{pregunta.getId()}}" />
+                                <input name="id_respuesta" type="hidden" value="{{respuesta.getId()}}" />
+                            </dd>
+                        </dl>
+                        <p class="alignright">{{ submit_button('bluebg', 'Enviar') }}{{ button('redbg', redirect_to, 'Cancel') }}</p>
+                    </form>
+                    <form action="/discussion/{{ pregunta.getId() }}/{{ respuesta.getId() }}" method="post">
+                    <!--<form action="/discussion/question/answer/comment" method="post">-->
+                        <dl>
+                            <dt>Añadir comentario</dt>
+                            <dd>
+                                <input type="text" name="descripcion" placeholder="Descripcion" /><br>
+                                <input name="sentimiento" type="radio" value="1" />Positivo
+                                <input name="sentimiento" type="radio" value="2" checked />Neutral
+                                <input name="sentimiento" type="radio" value="3" />Negativo
+                            </dd>
+                        </dl>
+                        <p class="alignright">{{ submit_button('bluebg', 'Crear') }}{{ button('redbg', redirect_to, 'Cancel') }}</p>
+                    </form>
+                </div>           
+                {% for comentario in respuesta.getComentarios() %}
+                    {% if comentario.getVisible() %}
+                        {% if comentario.getSentimiento().value == 1 %}
+                            <div class="commentdiv1">
+                        {% elif comentario.getSentimiento().value == 2 %}
+                            <div class="commentdiv2">
+                        {% elif comentario.getSentimiento().value == 3 %}
+                            <div class="commentdiv3">
+                        {% endif %}
+                            <p class="commenttext">{{comentario.getDescripcion()}}</p><br>
+                            <p class="commenttext">{{comentario.getCreador()}}</p>
+                            <p class="votetext">votos: {{comentario.getVotos()}}</p>
+                            <form action="/discussion/{{ pregunta.getId() }}/{{ respuesta.getId() }}/{{comentario.getId()}}/votar" method="POST">
+                                <p class="alignleft">{{ submit_button('redfire', 'Votar') }}</p>
+                            </form>
+                            <p class="datetext">{{comentario.getFechaCreacion().strftime("%A, %d of %B %Y at %I:%M %p")}}</p>
+                            <form action="/discussion/{{ pregunta.getId() }}/{{ respuesta.getId() }}/{{ comentario.getId() }}/report" method="post">
+                                </dl>
+                                    <dt>Reportar comentario:</dt>
+                                    <dd>
+                                        <input type="text" name="descripcion" placeholder="Descripcion" />
+                                        <input name="id_pregunta" type="hidden" value="{{pregunta.getId()}}" />
+                                        <input name="id_respuesta" type="hidden" value="{{respuesta.getId()}}" />
+                                        <input name="id_comentario" type="hidden" value="{{comentario.getId()}}" />
+                                    </dd>
+                                </dl>
+                                <p class="alignright">{{ submit_button('bluebg', 'Enviar') }}{{ button('redbg', redirect_to, 'Cancel') }}</p>
+                            </form>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+    {% endblock %}
+{% endblock %}
