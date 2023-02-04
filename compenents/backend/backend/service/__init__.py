@@ -1,5 +1,5 @@
 """ 
-Capa de servicios de clases de Backend service-layer
+Capa de servicios de clases de Backend
 """
 
-from .preguntaservice import PreguntaService
+from .registro_sensor_service import RegistroSensorService

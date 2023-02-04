@@ -3,16 +3,16 @@
 import os
 import inspect
 import logging
-import connexion
+import connexion  # type: ignore
 from typing import Dict
 from flask import Flask
 from flask import current_app
 from flask.logging import default_handler
-from authlib.jose import JsonWebSignature
+from authlib.jose import JsonWebSignature  # type: ignore
 import backend
-from dms2223backend.data.config import BackendConfiguration
-from dms2223backend.data.db import Schema
-from dms2223backend.service import AuthService
+from backend.data.config import BackendConfiguration
+from backend.data.db import Schema
+from backend.service import AuthService
 
 
 if __name__ == '__main__':
@@ -22,7 +22,7 @@ if __name__ == '__main__':
     jws: JsonWebSignature = JsonWebSignature()
 
     specification_dir = os.path.dirname(
-        inspect.getfile(dms2223backend)) + '/openapi'
+        inspect.getfile(backend)) + '/openapi'
     app = connexion.FlaskApp(
         __name__,
         specification_dir=specification_dir,
