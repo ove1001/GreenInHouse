@@ -3,7 +3,7 @@
 
 from enum import Enum
 
-class Sensores(Enum):
+class TipoSensor(Enum):
     """ Enumeration with the sentiments.
     """
     HUMEDAD_AMBIENTE = 1

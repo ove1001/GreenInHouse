@@ -1,5 +1,6 @@
-""" Common data layer modules to be used by the different services.
+""" 
+Capa de datos comunes utilizados por diferentes servicios de frontend y backend.
 """
 
-from .roles import Roles
-from .sensores import Sensores
+from .tipo_sensor import TipoSensor
+from .registro_sensor import RegistroSensor

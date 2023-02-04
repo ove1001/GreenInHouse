@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+from typing import List
+from dms2223common.data.Pregunta import Pregunta
+from dms2223common.data.Respuesta import Respuesta
+from dms2223common.data.Comentario import Comentario
+from dms2223common.data.sentiment import Sentiment
+from dms2223backend.data.config import BackendConfiguration
+from dms2223backend.data.db import Schema
+from dms2223backend.service import PreguntaService, ComentarioService, RespuestaService
+
+cfg: BackendConfiguration = BackendConfiguration()
+cfg.load_from_file(cfg.default_config_file())
+db: Schema = Schema(cfg)
+pregunta1 = Pregunta("Autor 1","Titulo 1","Descripcion 1")
+pregunta2 = Pregunta("Autor 2","Titulo 2","Descripcion 2")
+pregunta3 = Pregunta("Autor 3","Titulo 3","Descripcion 3")
+PreguntaService.create_pregunta_from_common(pregunta1, db)
+PreguntaService.create_pregunta_from_common(pregunta2, db)
+PreguntaService.create_pregunta_from_common(pregunta3, db)
+
+preguntas: List[Pregunta] = PreguntaService.list_preguntas(db)
+
+for pregunta in preguntas:
+    respuesta1 = Respuesta("Autor1","Respuesta1")
+    respuesta2 = Respuesta("Autor1","Respuesta2")
+    respuesta3 = Respuesta("Autor1","Respuesta3")
+    RespuestaService.create_respuesta_from_common(respuesta1,pregunta.getId(), db)
+    RespuestaService.create_respuesta_from_common(respuesta2,pregunta.getId(), db)
+    RespuestaService.create_respuesta_from_common(respuesta3,pregunta.getId(), db)
+
+    respuestas: List[Respuesta] = RespuestaService.list_respuestas(pregunta.getId(), db)
+
+    for respuesta in respuestas:
+        comentario1 = Comentario("Autor1","Comentario1",Sentiment.NEUTRAL.name)
+        comentario2 = Comentario("Autor1","Comentario2",Sentiment.POSITIVE.name)
+        comentario3 = Comentario("Autor1","Comentario3",Sentiment.NEGATIVE.name)
+        ComentarioService.create_comentario_from_common(comentario1,respuesta.getId(), db)
+        ComentarioService.create_comentario_from_common(comentario2,respuesta.getId(), db)
+        ComentarioService.create_comentario_from_common(comentario3,respuesta.getId(), db)
