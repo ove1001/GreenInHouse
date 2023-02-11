@@ -25,4 +25,4 @@ cd "$path_intall"/components/common
 
 cd "$path_intall"/components/backend
 ./install.sh
-#./start.sh
+./start.sh

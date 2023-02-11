@@ -7,8 +7,8 @@ from sqlalchemy.engine import Engine  # type: ignore
 from sqlalchemy.ext.declarative import declarative_base  # type: ignore
 from sqlalchemy.orm import sessionmaker, scoped_session, registry  # type: ignore
 from sqlalchemy.orm.session import Session  # type: ignore
-from data.config import BackendConfiguration
-from compenents.backend.backend.data.db.results.registro_sensor import RegistroSensor
+from backend.data.config import BackendConfiguration
+from backend.data.db.results.registro_sensor import RegistroSensor
 
 
 # Requerido por SQLite para forzxar la integridad de claves foraneas
