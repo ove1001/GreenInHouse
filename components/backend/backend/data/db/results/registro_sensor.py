@@ -32,10 +32,10 @@ class RegistroSensor(ModuloBase):
             #str(self.tipo_sensor + str(self.numero_sensor)),
             'sensor',
             metadata,
-            Column('id', BigInteger, autoincrement='auto', primary_key=True),
+            Column('id', Integer, autoincrement='auto', primary_key=True),
             Column('tipo_sensor',String(32),nullable=False ),
             Column('numero_sensor', Integer, nullable=False),
-            Column('descripcion', Float, nullable=False),
+            Column('valor', Float, nullable=False),
             Column('fecha', TIMESTAMP, nullable=False),
         )
 

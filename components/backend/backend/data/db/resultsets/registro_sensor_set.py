@@ -50,7 +50,7 @@ class RegistroSensorSet():
         except IntegrityError as ex:
             session.rollback()
             raise ErrorRegistroSensorExiste(
-                'El registro ' + str(id) + ' del sensor ' + str(numero_sensor) + ' de ' +  tipo_sensor + 'ya existe.'
+                'El registro ' + str(nuevo_registro.id) + ' del sensor ' + str(nuevo_registro.numero_sensor) + ' de ' +  nuevo_registro.tipo_sensor + 'ya existe.'
                 ) from ex
 
     @staticmethod

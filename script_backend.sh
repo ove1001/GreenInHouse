@@ -19,7 +19,6 @@ python3 -m venv .venv
 source "$path_intall"/venv_backend/.venv/bin/activate
 
 pip3 install wheel flask connexion sqlalchemy==2.0.0b3 pyyaml
-
 pip3 install connexion[swagger-ui]
 
 cd "$path_intall"/components/common
