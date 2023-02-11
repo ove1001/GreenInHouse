@@ -648,8 +648,11 @@ paths:
 #       security:
 #         - user_token: []
 #           api_key: []
-# components:
-#   schemas:
+components:
+  schemas:
+    EmptyContentModel:
+      type: string
+      nullable: true
 #     QuestionCoreModel:
 #       type: object
 #       properties:
@@ -939,9 +942,6 @@ paths:
 #         - status
 #         - id
 #         - tipo
-#     EmptyContentModel:
-#       type: string
-#       nullable: true
 #   parameters:
 #     QuestionIdPathParam:
 #       name: qid
@@ -971,14 +971,14 @@ paths:
 #       schema:
 #         type: integer
 #       required: true
-#   responses:
-#     Empty:
-#       description: An empty content.
-#       content:
-#         "text/plain":
-#           schema:
-#             $ref: "#/components/schemas/EmptyContentModel"
-#           example: ""
+  responses:
+    Empty:
+      description: An empty content.
+      content:
+        "text/plain":
+          schema:
+            $ref: "#/components/schemas/EmptyContentModel"
+          example: ""
 #     ReportStatusChanged:
 #       description: Report status successfully changed.
 #       content:

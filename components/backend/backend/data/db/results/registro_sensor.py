@@ -18,7 +18,7 @@ class RegistroSensor(ModuloBase):
         self.fecha: datetime = datetime.now()
 
     @staticmethod
-    def _definicion_tabla(self, metadata: MetaData) -> Table:
+    def _table_definition(metadata: MetaData) -> Table:
         """ 
         Definicion de la tabla.
         Args:
@@ -40,7 +40,7 @@ class RegistroSensor(ModuloBase):
         )
 
     @staticmethod
-    def _mapeado_propiedasdes() -> Dict:
+    def _mapping_properties() -> Dict:
         """ 
         Obtiene el diccionario con las propiedades de mapeado.
         Returns:

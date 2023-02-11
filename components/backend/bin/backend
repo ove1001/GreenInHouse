@@ -37,7 +37,7 @@ if __name__ == '__main__':
         current_app.db = db
         current_app.cfg = cfg
         current_app.jws = jws
-        current_app.authservice = auth_service
+        #current_app.authservice = auth_service
 
     root_logger = logging.getLogger()
     root_logger.addHandler(default_handler)

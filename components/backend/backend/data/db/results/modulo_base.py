@@ -25,13 +25,13 @@ class ModuloBase(ABC):
         """
         esquema_db.map_imperatively(
             cls,
-            cls._definicion_tabla(esquema_db.metadata),  # type: ignore
-            properties=cls._mapeado_propiedasdes()  # type: ignore
+            cls._table_definition(esquema_db.metadata),  # type: ignore
+            properties=cls._mapping_properties()  # type: ignore
         )
 
     @staticmethod
     @abstractmethod
-    def _definicion_tabla(metadata: MetaData) -> Table:
+    def _table_definition(metadata: MetaData) -> Table:
         """ 
         Definicion de la tabla.
         Args:
@@ -43,7 +43,7 @@ class ModuloBase(ABC):
         """
 
     @staticmethod
-    def _mapeado_propiedasdes() -> Dict:
+    def _mapping_properties() -> Dict:
         """ 
         Obtiene el diccionario con las propiedades de mapeado.
         Returns:
