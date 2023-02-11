@@ -10,7 +10,7 @@ from dms2223backend.data.db import Schema
 from dms2223backend.service import PreguntaService, ComentarioService, RespuestaService
 
 cfg: BackendConfiguration = BackendConfiguration()
-cfg.load_from_file(cfg.default_config_file())
+#cfg.load_from_file(cfg.default_config_file())
 db: Schema = Schema(cfg)
 pregunta1 = Pregunta("Autor 1","Titulo 1","Descripcion 1")
 pregunta2 = Pregunta("Autor 2","Titulo 2","Descripcion 2")

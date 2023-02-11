@@ -25,7 +25,7 @@ class BackendConfiguration(ServiceConfiguration):
         ServiceConfiguration.__init__(self)
 
         self.set_db_connection_string('sqlite:////tmp/GreenInHouseBackend.sqlite3.db')
-        self.set_service_host('127.0.0.1')
+        self.set_service_host('192.168.0.20')#('127.0.0.1')
         self.set_service_port(5000)
         self.set_debug_flag(True)
         #TODO
@@ -33,15 +33,7 @@ class BackendConfiguration(ServiceConfiguration):
         #TODO
         self.set_jws_secret('This JWS secret should be changed ASAP')
         self.set_jws_ttl(3600)
-        self.set_authorized_api_keys([])
-        '''
-        self.set_auth_service({
-            'host': '127.0.0.1',
-            'port': 4000,
-            #TODO
-            'apikey_secret': 'This should be the backend API key'
-        })
-        '''
+        self.set_authorized_api_keys(['1234','This is another frontend API key'])
 
     def _set_values(self, values: Dict) -> None:
         """Sets/merges a collection of configuration values.
