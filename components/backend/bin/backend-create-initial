@@ -7,10 +7,14 @@ from common.data.registro_sensor import RegistroSensor as RegistroSensorCommon
 from backend.data.config import BackendConfiguration
 from backend.data.db import Esquema
 from backend.service import RegistroSensorService
+from backend.service import RegistroPlantaService
+from common.data import TipoSensor, ZonaSensor
 
 cfg: BackendConfiguration = BackendConfiguration()
 #cfg.load_from_file(cfg.default_config_file())
 db: Esquema = Esquema(cfg)
 
-RegistroSensorService.create_registro_sensor("Humedad",1,65.0,db)
 
+RegistroPlantaService.create_registro_planta("Sin planta","Sin tipo de planta",db)
+#RegistroSensorService.create_registro_sensor(TipoSensor.HUMEDAD_AMBIENTE,ZonaSensor.AMBIENTE,1,65.0,db)
+RegistroSensorService.create_registro_sensor(TipoSensor.HUMEDAD,ZonaSensor.AMBIENTE,1,65.0,db)

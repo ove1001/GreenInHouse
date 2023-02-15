@@ -1,12 +1,14 @@
-""" Sentiments enumeration module.
+""" 
+Enumeracion de tipos de sensores.
 """
 
 from enum import Enum
 
 class TipoSensor(Enum):
-    """ Enumeration with the sentiments.
+    """ 
+    Enumeracion con los tipos de sensores
     """
-    HUMEDAD_AMBIENTE = 1
-    HUMEDAD_SUELO = 2
-    TEMPERATURA = 3
-    LUZ = 4
+    HUMEDAD = 1
+    TEMPERATURA = 2
+    LUZ = 3
+    OTRO = 99

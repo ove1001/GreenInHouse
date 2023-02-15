@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base  # type: ignore
 from sqlalchemy.orm import sessionmaker, scoped_session, registry  # type: ignore
 from sqlalchemy.orm.session import Session  # type: ignore
 from backend.data.config import BackendConfiguration
-from backend.data.db.results.registro_sensor import RegistroSensor
+from backend.data.db.results import RegistroSensor, RegistroPlanta
 
 
 # Requerido por SQLite para forzxar la integridad de claves foraneas
@@ -45,6 +45,7 @@ class Esquema:
         self.__session_maker = scoped_session(sessionmaker(bind=self.__create_engine))
 
         #TODO
+        RegistroPlanta.map(self.__registry)
         RegistroSensor.map(self.__registry)
 
         self.__registry.metadata.create_all(self.__create_engine)

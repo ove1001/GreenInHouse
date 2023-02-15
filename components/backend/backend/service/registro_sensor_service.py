@@ -1,19 +1,25 @@
-from typing import List, Dict
+from typing import Union, List, Dict
 from sqlalchemy.orm.session import Session # type: ignore
 from backend.data.db.esquema import Esquema
 from backend.data.db.results import RegistroSensor
 from backend.data.db.resultsets import RegistroSensorSet
-from common.data.registro_sensor import RegistroSensor as CommonRegistroSensor
+from common.data import RegistroSensor as CommonRegistroSensor
+from common.data import TipoSensor, ZonaSensor
 
 class RegistroSensorService():
 
     @staticmethod
-    def create_registro_sensor(tipo_sensor:str ,numero_sensor:int, valor:float, schema: Esquema) -> CommonRegistroSensor:
+    # def create_registro_sensor(tipo_sensor: Union[TipoSensor,str], zona_sensor:Union[ZonaSensor,str] ,numero_sensor:int, valor:float, schema: Esquema) -> CommonRegistroSensor:
+    def create_registro_sensor(tipo_sensor: TipoSensor, zona_sensor: ZonaSensor, numero_sensor:int, valor:float, schema: Esquema) -> CommonRegistroSensor:
         session: Session = schema.new_session()
         out: CommonRegistroSensor = None
         try:
-            new_registro_sensor: RegistroSensor = RegistroSensorSet.create(session, tipo_sensor, numero_sensor, valor)
-            out= CommonRegistroSensor(new_registro_sensor.tipo_sensor,new_registro_sensor.numero_sensor,new_registro_sensor.valor, new_registro_sensor.id, new_registro_sensor.fecha)
+            # if isinstance(tipo_sensor, str):
+            #     tipo_sensor = TipoSensor[tipo_sensor]
+            # if isinstance(zona_sensor, str):
+            #     zona_sensor = ZonaSensor[zona_sensor]
+            new_registro_sensor: RegistroSensor = RegistroSensorSet.create(session, tipo_sensor, zona_sensor, numero_sensor, valor)
+            out= CommonRegistroSensor(new_registro_sensor.tipo_sensor,new_registro_sensor.zona_sensor,new_registro_sensor.numero_sensor,new_registro_sensor.valor, new_registro_sensor.id, new_registro_sensor.fecha)
         except Exception as ex:
             raise ex
         finally:
